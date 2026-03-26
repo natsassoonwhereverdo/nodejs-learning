@@ -1,0 +1,11 @@
+{
+  "name": "nodejs-learning",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n \"frontend,backend\" -c \"blue,green\" \"pnpm --filter worker-thread-frontend dev\" \"pnpm --filter worker-thread-demo dev\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
