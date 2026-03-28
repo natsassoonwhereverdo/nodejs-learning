@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>固定高度虚拟列表 - 完整可运行示例</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .info {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .virtual-list {
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            /* 可视区域高度（Viewport） */
+            border: 2px solid #333;
+            border-radius: 8px;
+            overflow: auto;
+            /* 关键：让滚动条出现 */
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            margin: 0 auto;
+        }
+
+        .phantom {
+            position: relative;
+            /* 关键：作为绝对定位的父容器 */
+            width: 100%;
+            /* 总高度 = 数据量 × 每项高度（后面 JS 会动态设置） */
+        }
+
+        .item {
+            position: absolute;
+            /* 关键：绝对定位，按真实索引计算 top */
+            width: 100%;
+            height: 60px;
+            /* 固定高度（必须和 JS 中的 itemHeight 一致） */
+            line-height: 60px;
+            padding: 0 20px;
+            font-size: 16px;
+            border-bottom: 1px solid #eee;
+            background: #fff;
+            transition: background 0.1s;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            color: #222;
+        }
+
+        .item:hover {
+            background: #f0f8ff;
+        }
+
+        .item:nth-child(even) {
+            background: #fafafa;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="title">固定高度虚拟列表完整实现</div>
+        <div class="info">
+            数据量：<strong>10,000 条</strong>　｜　
+            每项高度：<strong>60px</strong>　｜　
+            可视区域：<strong>600px</strong>
+        </div>
+    </div>
+
+    <!-- 虚拟列表核心容器 -->
+    <div id="virtualList" class="virtual-list">
+        <div id="phantom" class="phantom"></div>
+    </div>
+
+    <div class="footer">
+        滚动时只会渲染可视区域 + 上下各 5 条缓冲区（共约 20 条 DOM）<br>
+        打开控制台可看到每次滚动时打印的 startIndex / endIndex
+    </div>
+
+    <script>
+        // ==================== 配置参数 ====================
+        const TOTAL_ITEMS = 10000;          // 总数据量（可改成 100000 测试）
+        const ITEM_HEIGHT = 60;             // 每项固定高度（必须和 CSS 中的 .item height 一致）
+        const BUFFER_COUNT = 5;             // 上下各缓冲 5 条（防止快速滚动白屏）
+        const VIEWPORT_HEIGHT = 600;        // 可视区域高度（必须和 CSS 中的 .virtual-list height 一致）
+
+        // ==================== 生成模拟数据 ====================
+        const data = Array.from({ length: TOTAL_ITEMS }, (_, index) => ({
+            id: index + 1,
+            text: `这是第 ${index + 1} 条数据 - 固定高度虚拟列表演示`
+        }));
+
+        // ==================== 核心 DOM 元素 ====================
+        const virtualList = document.getElementById('virtualList');   // 可滚动视口
+        const phantom = document.getElementById('phantom');          // 占位容器（撑起滚动条）
+
+        // ==================== 计算总高度并设置占位容器 ====================
+        const totalHeight = TOTAL_ITEMS * ITEM_HEIGHT;
+        phantom.style.height = `${totalHeight}px`;
+
+        // ==================== 创建 DOM 池（复用节点，性能关键） ====================
+        const visibleCount = Math.ceil(VIEWPORT_HEIGHT / ITEM_HEIGHT) + 2 * BUFFER_COUNT;
+        const itemPool = [];   // 存放所有可复用的 item 元素（数量固定）
+
+        for (let i = 0; i < visibleCount; i++) {
+            const item = document.createElement('div');
+            item.className = 'item';
+            phantom.appendChild(item);   // 全部插入到 phantom 中
+            itemPool.push(item);
+        }
+
+        // ==================== 渲染函数（核心计算逻辑） ====================
+        function render(scrollTop = 0) {
+            // 1. 计算起始索引（核心公式）
+            let startIndex = Math.floor(scrollTop / ITEM_HEIGHT) - BUFFER_COUNT;
+            startIndex = Math.max(0, startIndex);                    // 不能小于 0
+
+
+
+            
+            // 3. 遍历 DOM 池，复用每个元素
+            for (let i = 0; i < visibleCount; i++) {
+                const realIndex = startIndex + i;                    // 当前这个 item 对应的真实数据索引
+
+                const dom = itemPool[i];
+
+                if (realIndex < TOTAL_ITEMS) {
+                    // 有数据 → 更新内容和绝对定位
+                    dom.textContent = data[realIndex].text;
+                    dom.style.top = `${realIndex * ITEM_HEIGHT}px`;  // 关键：按真实索引计算 top
+                    dom.style.display = 'flex';
+                } else {
+                    // 超出数据范围 → 隐藏
+                    dom.style.display = 'none';
+                }
+            }
+        }
+
+
+
+
+        
+        // ==================== 滚动事件监听 ====================
+        let ticking = false;
+
+        virtualList.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    render(virtualList.scrollTop);
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // ==================== 首次渲染 ====================
+        render(0);
+
+        console.log('%c✅ 固定高度虚拟列表已启动！共 ' + TOTAL_ITEMS + ' 条数据，仅渲染 ' + visibleCount + ' 个 DOM', 'color:#28a745;font-size:16px');
+    </script>
+</body>
+
+</html>

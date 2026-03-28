@@ -4,10 +4,10 @@
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "node --inspect --import tsx src/server.ts",
     "start": "node dist/server.js",
     "build": "tsc",
-    "dev:original": "node --loader tsx src/server.ts"
+    "dev:original": "node --import tsx src/server.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, Router } from 'express';
 import {
   extractMetadata,
   generateThumbnails,
@@ -7,7 +7,7 @@ import {
   getPoolStats
 } from '../pool.js';
 
-const router = express.Router();
+const router: Router = express.Router();
 
 /**
  * GET /api/video/stats

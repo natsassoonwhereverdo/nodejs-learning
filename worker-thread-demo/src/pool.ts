@@ -19,8 +19,7 @@ const videoPool = new Piscina({
   minThreads: 4,
   maxThreads: 8,
   maxQueue: 2, // Limit for large video files
-  idleTimeout: 120000,
-  activityTimeout: 300000
+  idleTimeout: 120000
 });
 
 // Compute tasks (fibonacci, primes)
@@ -61,7 +60,7 @@ export async function transcodeVideo(buffer: Buffer) {
 export function getPoolStats() {
   return {
     compute: {
-      ready: pool.ready,
+      ready: (pool as any).ready ?? true,
       queueSize: pool.queueSize,
       totalWorkers: pool.threads.length
     },

@@ -1,8 +1,8 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, Router } from 'express';
 import { runFibonacci, runPrimeSieve, getPoolStats } from '../pool.js';
 import type { FibonacciRequest, PrimesRequest } from '../types.js';
 
-const router = express.Router();
+const router: Router = express.Router();
 
 /**
  * POST /api/worker/fibonacci

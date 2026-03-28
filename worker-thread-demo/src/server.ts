@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import workerRouter from './routes/worker.js';
 import videoRouter from './routes/video.js';
+import memoryLabRouter from './routes/memory-lab.js';
+import concurrencyLabRouter from './routes/concurrency-lab.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,6 +24,8 @@ app.use(cors());
 // API routes
 app.use('/api/worker', workerRouter);
 app.use('/api/video', videoRouter);
+app.use('/api/memory-lab', memoryLabRouter);
+app.use('/api/concurrency-lab', concurrencyLabRouter);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -50,5 +54,22 @@ app.listen(PORT, () => {
   console.log(`  POST /api/video/transcode  - Heavy transcode simulation`);
   console.log(`  POST /api/video/process    - Full processing pipeline`);
   console.log(`  GET  /api/video/stats      - Video pool statistics`);
+  console.log(`\n  === Memory Leak Lab ===`);
+  console.log(`  GET  /api/memory-lab/request - Simulate traffic request`);
+  console.log(`  GET  /api/memory-lab/metrics - Runtime memory metrics`);
+  console.log(`  POST /api/memory-lab/mode    - Switch leak/fixed mode`);
+  console.log(`  POST /api/memory-lab/reset   - Reset counters and refs`);
+  console.log(`\n  === Stream Proxy Lab (Q5) ===`);
+  console.log(`  GET  /api/memory-lab/stream-proxy/download  - Proxy download (pipe/pipeline)`);
+  console.log(`  GET  /api/memory-lab/stream-proxy/metrics   - Stream proxy metrics`);
+  console.log(`  POST /api/memory-lab/stream-proxy/mode      - Switch pipe/pipeline`);
+  console.log(`  POST /api/memory-lab/stream-proxy/reset     - Reset stream proxy state`);
+  console.log(`  POST /api/memory-lab/stream-proxy/simulate-client-disconnect - Auto disconnect simulation`);
+  console.log(`\n  === Concurrency & Event Loop Lab ===`);
+  console.log(`  POST /api/concurrency-lab/start      - Start naive/controlled run`);
+  console.log(`  POST /api/concurrency-lab/stop       - Stop current run`);
+  console.log(`  POST /api/concurrency-lab/reset      - Reset run metrics`);
+  console.log(`  GET  /api/concurrency-lab/metrics    - Runtime batch metrics`);
+  console.log(`  GET  /api/concurrency-lab/event-loop-order - nextTick/setImmediate order demo`);
   console.log(`\nFrontend: http://localhost:${PORT}`);
 });

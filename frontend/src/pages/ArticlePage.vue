@@ -21,6 +21,18 @@ const ExampleComponent = computed(() => {
     WorkerTester: defineAsyncComponent(
       () => import('../components/WorkerTester.vue')
     ),
+    MemoryLeakLab: defineAsyncComponent(
+      () => import('../components/MemoryLeakLab.vue')
+    ),
+    ConcurrencyEventLoopLab: defineAsyncComponent(
+      () => import('../components/ConcurrencyEventLoopLab.vue')
+    ),
+    AsyncContextTraceLab: defineAsyncComponent(
+      () => import('../components/AsyncContextTraceLab.vue')
+    ),
+    StreamProxyLab: defineAsyncComponent(
+      () => import('../components/StreamProxyLab.vue')
+    ),
   };
   return componentMap[article.value.component] || null;
 });
@@ -144,7 +156,7 @@ const ExampleComponent = computed(() => {
 
 <style scoped>
 .article-page {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 1.5rem 2rem 4rem;
 }
@@ -233,7 +245,7 @@ const ExampleComponent = computed(() => {
 /* ---- Content Grid ---- */
 .content-grid {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   gap: 1.5rem;
   align-items: start;
 }
@@ -256,13 +268,15 @@ const ExampleComponent = computed(() => {
 /* ---- Demo Section ---- */
 .demo-section {
   min-width: 0;
+  width: 100%;
 }
 
 .demo-container {
   background: #0d1321;
   border: 1px solid #1e2a3a;
   border-radius: 14px;
-  overflow: hidden;
+  overflow: visible;
+  width: 100%;
 }
 
 .no-demo {
